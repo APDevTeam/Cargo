@@ -42,6 +42,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,153 +141,79 @@ public class CargoMain extends JavaPlugin implements Listener {
         return instance;
     }
 
-    public void unload(Player player){
-        if(!player.hasPermission("Cargo.unload")){
+    public void unload(@NotNull Player player){
+        if (!player.hasPermission("Cargo.unload")) {
             player.sendMessage(Config.ERROR_TAG + "You don't have permission to do that!");
             return;
         }
-        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
-        if(playersInQue.contains(player)){
+        if (playersInQue.contains(player)) {
             player.sendMessage(Config.ERROR_TAG + "You're already moving cargo!");
             return;
         }
+        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+            player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
+            return;
+        }
 
-        if(playerCraft == null){
+        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
+        if(playerCraft == null) {
             player.sendMessage(Config.ERROR_TAG + "You need to be piloting a craft to do that!");
             return;
         }
-        //NPC cargoMerchant=null;
-        List<NPC> nearbyMerchants = new ArrayList<>();
-        double distance;//, lastScan = scanRange;
-        MovecraftLocation loc = playerCraft.getHitBox().getMidPoint();
-        for(NPC npc :NPCUtil.getNPCsWithTrait(CargoTrait.class)){
-            if(!npc.isSpawned())
-                continue;
-            distance = Config.cardinalDistance ? Math.abs(loc.getX()-npc.getEntity().getLocation().getX()) + Math.abs(loc.getZ()-npc.getEntity().getLocation().getZ()) : Math.sqrt(Math.pow(loc.getX()-npc.getEntity().getLocation().getX(),2) + Math.pow(loc.getZ()-npc.getEntity().getLocation().getZ(),2));
-            if( distance <= Config.scanRange){
-                nearbyMerchants.add(npc);
-            }
-        }
-        if(nearbyMerchants.size()==0){
+
+        List<NPC> nearbyMerchants = NPCUtil.getNPCsInRange(playerCraft.getHitBox().getMidPoint());
+        if (nearbyMerchants.isEmpty()) {
             player.sendMessage(Config.ERROR_TAG + "You need to be within " + Config.scanRange + " blocks of a merchant to use that command!");
             return;
         }
 
-        if(player.getInventory().getItemInMainHand() == null || player.getInventory().getItemInMainHand().getType() == Material.AIR){
+        TradableGUIItem finalItem = NPCUtil.getUnloadItem(nearbyMerchants, player.getInventory().getItemInMainHand().clone(), dtlTradersPlugin);
+        if (finalItem == null || finalItem.getTradePrice() == 0.0) {
             player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
             return;
         }
-        String guiName;
-        TradableGUIItem finalItem = null;
-        for(NPC cargoMerchant : nearbyMerchants) {
-            if(finalItem!=null)
-                break;
-            guiName = cargoMerchant.getTrait(TraderTrait.class).getGUIName();
-            AGUI gui = dtlTradersPlugin.getGuiListService().getGUI(guiName);
-            TradeGUI tradeGUI = (TradeGUI) gui;
-            ItemStack compareItem = player.getInventory().getItemInMainHand().clone();
-            finalItem = null;
-            for (TradeGUIPage page : tradeGUI.getPages()) {
-                if (page == null) continue;
-                for (AGUIItem tempItem : page.getItems("sell")) {
-                    if (!(tempItem instanceof TradableGUIItem)) continue;
-                    if (tempItem.getMainItem().isSimilar(compareItem)) {
-                        if (tempItem.getMainItem().getAmount() > 1)
-                            continue;
-                        finalItem = (TradableGUIItem) tempItem;
-                        break;
-                    }
-                }
-                    if (finalItem == null || finalItem.getTradePrice() == 0.0) {
-                        player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
-                        return;
-                    }
 
-            }
-        }
-        assert finalItem!=null;
         String itemName = finalItem.getMainItem().getItemMeta().getDisplayName() != null && finalItem.getMainItem().getItemMeta().getDisplayName().length() > 0 ? finalItem.getMainItem().getItemMeta().getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
-
-        List<Inventory> invs = CraftInventoryUtil.getInventories(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
-        int size = invs.size();
-        if(size <=0 ){
+        List<Inventory> inventories = CraftInventoryUtil.getInventories(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
+        if (inventories.isEmpty()) {
             player.sendMessage(Config.ERROR_TAG + "You have no " + itemName + " on this craft!");
             return;
         }
 
         player.sendMessage(Config.SUCCESS_TAG + "Started unloading cargo");
         playersInQue.add(player);
-        new UnloadTask(playerCraft,finalItem ).runTaskTimer(this,Config.delay,Config.delay);
-        new ProcessingTask(player, finalItem,size).runTaskTimer(this,0,20);
+        new UnloadTask(playerCraft, finalItem).runTaskTimer(this, Config.delay, Config.delay);
+        new ProcessingTask(player, finalItem, inventories.size()).runTaskTimer(this, 0, 20);
     }
 
-    public void load(Player player){
-        if(!player.hasPermission("Cargo.load")){
+    public void load(@NotNull Player player){
+        if (!player.hasPermission("Cargo.load")) {
             player.sendMessage(Config.ERROR_TAG + "You don't have permission to do that!");
             return;
         }
-        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
-        if(playersInQue.contains(player)){
+        if (playersInQue.contains(player)) {
             player.sendMessage(Config.ERROR_TAG + "You're already moving cargo!");
             return;
         }
-
-        if(playerCraft == null){
-            player.sendMessage(Config.ERROR_TAG + "You need to be piloting a craft to do that!");
-            return;
-        }
-        //NPC cargoMerchant=null;
-        List<NPC> nearbyMerchants = new ArrayList<>();
-        double distance;//, lastScan = scanRange;
-        MovecraftLocation loc = playerCraft.getHitBox().getMidPoint();
-        for(NPC npc :NPCUtil.getNPCsWithTrait(CargoTrait.class)){
-            if(!npc.isSpawned())
-                continue;
-            distance = Config.cardinalDistance ? Math.abs(loc.getX()-npc.getEntity().getLocation().getX()) + Math.abs(loc.getZ()-npc.getEntity().getLocation().getZ()) : Math.sqrt(Math.pow(loc.getX()-npc.getEntity().getLocation().getX(),2) + Math.pow(loc.getZ()-npc.getEntity().getLocation().getZ(),2));
-            if( distance <= Config.scanRange){
-                nearbyMerchants.add(npc);
-            }
-        }
-        if(nearbyMerchants.size()==0){
-            player.sendMessage(Config.ERROR_TAG + "You need to be within " + Config.scanRange + " blocks of a merchant to use that command!");
-            return;
-        }
-
-        if(player.getInventory().getItemInMainHand() == null || player.getInventory().getItemInMainHand().getType() == Material.AIR){
+        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
             getLogger().info(player.getInventory().getItemInMainHand().getType().name());
             player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
             return;
         }
-        String guiName;
-        TradableGUIItem finalItem = null;
-        for(NPC cargoMerchant : nearbyMerchants) {
-            guiName = cargoMerchant.getTrait(TraderTrait.class).getGUIName();
-            AGUI gui = dtlTradersPlugin.getGuiListService().getGUI(guiName);
-            TradeGUI tradeGUI = (TradeGUI) gui;
-            ItemStack compareItem = player.getInventory().getItemInMainHand().clone();
-            for (TradeGUIPage page : tradeGUI.getPages()) {
-                if (page == null) 
-                    continue;
 
-                for (AGUIItem tempItem : page.getItems("buy")) {
-                    if (!(tempItem instanceof TradableGUIItem))
-                        continue;
-
-                    TradableGUIItem tradeItem = (TradableGUIItem) tempItem;
-                    if (tradeItem.getMainItem().isSimilar(compareItem)) {
-                        if (tempItem.getMainItem().getAmount() > 1)
-                            continue;
-
-                        finalItem = tradeItem;
-                        break;
-                    }
-                }
-                if (finalItem != null)
-                    break;
-            }
-            if (finalItem != null)
-                break;
+        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
+        if (playerCraft == null) {
+            player.sendMessage(Config.ERROR_TAG + "You need to be piloting a craft to do that!");
+            return;
         }
+
+        List<NPC> nearbyMerchants = NPCUtil.getNPCsInRange(playerCraft.getHitBox().getMidPoint());
+        if (nearbyMerchants.isEmpty()) {
+            player.sendMessage(Config.ERROR_TAG + "You need to be within " + Config.scanRange + " blocks of a merchant to use that command!");
+            return;
+        }
+
+        TradableGUIItem finalItem = NPCUtil.getLoadItem(nearbyMerchants, player.getInventory().getItemInMainHand(), dtlTradersPlugin);
         if (finalItem == null || finalItem.getTradePrice() == 0.0) {
             player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
             return;
