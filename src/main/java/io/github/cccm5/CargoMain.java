@@ -10,6 +10,9 @@ import com.degitise.minevid.dtlTraders.utils.citizens.TraderTrait;
 import io.github.cccm5.async.LoadTask;
 import io.github.cccm5.async.ProcessingTask;
 import io.github.cccm5.async.UnloadTask;
+import io.github.cccm5.commands.CargoCommand;
+import io.github.cccm5.commands.LoadCommand;
+import io.github.cccm5.commands.UnloadCommand;
 import io.github.cccm5.config.Config;
 import io.github.cccm5.util.CraftInventoryUtil;
 import io.github.cccm5.util.NPCUtil;
@@ -110,47 +113,15 @@ public class CargoMain extends JavaPlugin implements Listener {
         }
         dtlTradersPlugin = (Main) traders;
         economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+
+        getCommand("cargo").setExecutor(new CargoCommand());
+        getCommand("load").setExecutor(new LoadCommand());
+        getCommand("unload").setExecutor(new UnloadCommand());
     }
 
     public void onDisable() {
         economy = null;
         instance = null;
-    }
-
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) { // Plugin
-        if (command.getName().equalsIgnoreCase("unload")) {
-            if(!(sender instanceof Player)){
-                sender.sendMessage(Config.ERROR_TAG + "You need to be a player to execute that command!");
-                return true;
-            }
-            unload((Player) sender);
-            return true;
-        }
-
-        if (command.getName().equalsIgnoreCase("load")) {
-            if(!(sender instanceof Player)){
-                sender.sendMessage(Config.ERROR_TAG + "You need to be a player to execute that command!");
-                return true;
-            }
-            load((Player) sender);
-            return true;
-        }
-
-        if (command.getName().equalsIgnoreCase("cargo")) {
-            if(!sender.hasPermission("Cargo.cargo")){
-                sender.sendMessage(Config.ERROR_TAG + "You don't have permission to do that!");
-                return true;
-            }
-            sender.sendMessage(ChatColor.WHITE + "--[ " + ChatColor.DARK_AQUA + "  Movecraft Cargo " + ChatColor.WHITE + " ]--");
-            sender.sendMessage(ChatColor.DARK_AQUA + "Scan Range: " + ChatColor.WHITE + Config.scanRange + " Blocks");
-            sender.sendMessage(ChatColor.DARK_AQUA + "Transfer Delay: " + ChatColor.WHITE + Config.delay + " ticks");
-            sender.sendMessage(ChatColor.DARK_AQUA + "Unload Tax: " + ChatColor.WHITE + String.format("%.2f",100*Config.unloadTax) + "%");
-            sender.sendMessage(ChatColor.DARK_AQUA + "Load Tax: " + ChatColor.WHITE + String.format("%.2f",100*Config.loadTax) + "%");
-            sender.sendMessage(ChatColor.DARK_AQUA + "Distance Type: " + ChatColor.WHITE + (Config.cardinalDistance ? "Cardinal" : "Direct"));
-            return true;
-        }
-        return false;
-
     }
 
     @EventHandler
@@ -195,7 +166,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         return instance;
     }
 
-    private void unload(Player player){
+    public void unload(Player player){
         if(!player.hasPermission("Cargo.unload")){
             player.sendMessage(Config.ERROR_TAG + "You don't have permission to do that!");
             return;
@@ -275,7 +246,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         new ProcessingTask(player, finalItem,size).runTaskTimer(this,0,20);
     }
 
-    private void load(Player player){
+    public void load(Player player){
         if(!player.hasPermission("Cargo.load")){
             player.sendMessage(Config.ERROR_TAG + "You don't have permission to do that!");
             return;
