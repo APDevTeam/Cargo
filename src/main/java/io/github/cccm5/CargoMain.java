@@ -8,6 +8,7 @@ import com.degitise.minevid.dtlTraders.guis.items.AGUIItem;
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import com.degitise.minevid.dtlTraders.utils.citizens.TraderTrait;
 import io.github.cccm5.util.CraftInventoryUtil;
+import io.github.cccm5.util.NPCUtil;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.countercraft.movecraft.craft.Craft;
@@ -230,7 +231,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         List<NPC> nearbyMerchants = new ArrayList<>();
         double distance;//, lastScan = scanRange;
         MovecraftLocation loc = playerCraft.getHitBox().getMidPoint();
-        for(NPC npc :Utils.getNPCsWithTrait(CargoTrait.class)){
+        for(NPC npc :NPCUtil.getNPCsWithTrait(CargoTrait.class)){
             if(!npc.isSpawned())
                 continue;
             distance = cardinalDistance ? Math.abs(loc.getX()-npc.getEntity().getLocation().getX()) + Math.abs(loc.getZ()-npc.getEntity().getLocation().getZ()) : Math.sqrt(Math.pow(loc.getX()-npc.getEntity().getLocation().getX(),2) + Math.pow(loc.getZ()-npc.getEntity().getLocation().getZ(),2));
@@ -310,7 +311,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         List<NPC> nearbyMerchants = new ArrayList<>();
         double distance;//, lastScan = scanRange;
         MovecraftLocation loc = playerCraft.getHitBox().getMidPoint();
-        for(NPC npc :Utils.getNPCsWithTrait(CargoTrait.class)){
+        for(NPC npc :NPCUtil.getNPCsWithTrait(CargoTrait.class)){
             if(!npc.isSpawned())
                 continue;
             distance = cardinalDistance ? Math.abs(loc.getX()-npc.getEntity().getLocation().getX()) + Math.abs(loc.getZ()-npc.getEntity().getLocation().getZ()) : Math.sqrt(Math.pow(loc.getX()-npc.getEntity().getLocation().getX(),2) + Math.pow(loc.getZ()-npc.getEntity().getLocation().getZ(),2));
