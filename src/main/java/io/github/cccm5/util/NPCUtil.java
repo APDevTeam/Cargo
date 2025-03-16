@@ -7,6 +7,7 @@ import com.degitise.minevid.dtlTraders.guis.gui.TradeGUIPage;
 import com.degitise.minevid.dtlTraders.guis.items.AGUIItem;
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import com.degitise.minevid.dtlTraders.utils.citizens.TraderTrait;
+import io.github.cccm5.CargoMain;
 import io.github.cccm5.CargoTrait;
 import io.github.cccm5.config.Config;
 import net.citizensnpcs.api.npc.NPC;
@@ -51,6 +52,12 @@ public class NPCUtil {
 
             if (distanceSquared <= (Config.scanRange * Config.scanRange)) {
                 result.add(npc);
+            }
+        }
+        if (Config.debug) {
+            CargoMain.getInstance().getLogger().info("Found " + result.size() + " merchants:");
+            for (NPC npc : result) {
+                CargoMain.getInstance().getLogger().info("- " + npc.getId() + ": " + npc.getName());
             }
         }
         return result;
