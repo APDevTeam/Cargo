@@ -24,7 +24,7 @@ dependencies {
 }
 
 group = "io.github.cccm5"
-version = "2.0.0_beta-4"
+version = "2.0.0_beta-5"
 description = "Cargo"
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
