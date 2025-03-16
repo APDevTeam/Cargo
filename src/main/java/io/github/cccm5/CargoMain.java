@@ -46,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CargoMain extends JavaPlugin implements Listener {
     private static Economy economy;
@@ -167,8 +168,18 @@ public class CargoMain extends JavaPlugin implements Listener {
             return;
         }
 
-        TradableGUIItem finalItem = NPCUtil.getUnloadItem(nearbyMerchants, player.getInventory().getItemInMainHand().clone(), dtlTradersPlugin);
-        if (finalItem == null || finalItem.getTradePrice() == 0.0) {
+        Set<TradableGUIItem> items = NPCUtil.getItems(nearbyMerchants, player.getInventory().getItemInMainHand(), dtlTradersPlugin, "sell");
+        TradableGUIItem finalItem = null;
+        for (TradableGUIItem item : items) {
+            if (finalItem == null) {
+                finalItem = item;
+                continue;
+            }
+
+            if (item.getTradePrice() > finalItem.getTradePrice())
+                finalItem = item;
+        }
+        if (finalItem == null || finalItem.getTradePrice() <= 0.0) {
             player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
             return;
         }
@@ -213,14 +224,23 @@ public class CargoMain extends JavaPlugin implements Listener {
             return;
         }
 
-        TradableGUIItem finalItem = NPCUtil.getLoadItem(nearbyMerchants, player.getInventory().getItemInMainHand(), dtlTradersPlugin);
-        if (finalItem == null || finalItem.getTradePrice() == 0.0) {
+        Set<TradableGUIItem> items = NPCUtil.getItems(nearbyMerchants, player.getInventory().getItemInMainHand(), dtlTradersPlugin, "buy");
+        TradableGUIItem finalItem = null;
+        for (TradableGUIItem item : items) {
+            if (finalItem == null) {
+                finalItem = item;
+                continue;
+            }
+
+            if (item.getTradePrice() < finalItem.getTradePrice())
+                finalItem = item;
+        }
+        if (finalItem == null || finalItem.getTradePrice() <= 0.0) {
             player.sendMessage(Config.ERROR_TAG + "You need to be holding a cargo item to do that!");
             return;
         }
 
-        final ItemMeta meta = finalItem.getMainItem().getItemMeta();
-        String itemName = meta.getDisplayName() != null && meta.getDisplayName().length() > 0 ? meta.getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
+        String itemName = finalItem.getMainItem().getItemMeta().getDisplayName() != null && finalItem.getMainItem().getItemMeta().getDisplayName().length() > 0 ? finalItem.getMainItem().getItemMeta().getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
         if(!economy.has(player,finalItem.getTradePrice()*(1+Config.loadTax))){
             player.sendMessage(Config.ERROR_TAG + "You don't have enough money to buy any " + itemName + "!");
             return;

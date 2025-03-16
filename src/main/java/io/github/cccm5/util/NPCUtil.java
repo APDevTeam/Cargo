@@ -20,7 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class NPCUtil {
     @NotNull
@@ -63,64 +65,28 @@ public class NPCUtil {
         return result;
     }
 
-    @Nullable
-    public static TradableGUIItem getUnloadItem(@NotNull List<NPC> nearbyMerchants, ItemStack compareItem, Main dtlTradersPlugin) {
-        TradableGUIItem result = null;
-        for (NPC cargoMerchant : nearbyMerchants) {
-            if (result != null)
-                break;
-            String guiName = cargoMerchant.getTrait(TraderTrait.class).getGUIName();
+    @NotNull
+    public static Set<TradableGUIItem> getItems(@NotNull List<NPC> merchants, ItemStack item, Main dtlTradersPlugin, String shopMode) {
+        Set<TradableGUIItem> result = new HashSet<>();
+        for (NPC merchant : merchants) {
+            String guiName = merchant.getTrait(TraderTrait.class).getGUIName();
             AGUI gui = dtlTradersPlugin.getGuiListService().getGUI(guiName);
-            TradeGUI tradeGUI = (TradeGUI) gui;
-            result = null;
-            for (TradeGUIPage page : tradeGUI.getPages()) {
-                if (page == null) continue;
-                for (AGUIItem tempItem : page.getItems("sell")) {
-                    if (!(tempItem instanceof TradableGUIItem)) continue;
-                    if (tempItem.getMainItem().isSimilar(compareItem)) {
-                        if (tempItem.getMainItem().getAmount() > 1)
-                            continue;
-                        result = (TradableGUIItem) tempItem;
-                        break;
-                    }
-                }
-                if (result == null || result.getTradePrice() == 0.0) {
-                    return null;
-                }
-            }
-        }
-        return result;
-    }
+            if (!(gui instanceof TradeGUI))
+                continue;
 
-    @Nullable
-    public static TradableGUIItem getLoadItem(@NotNull List<NPC> nearbyMerchants, ItemStack compareItem, Main dtlTradersPlugin) {
-        TradableGUIItem result = null;
-        for (NPC cargoMerchant : nearbyMerchants) {
-            String guiName = cargoMerchant.getTrait(TraderTrait.class).getGUIName();
-            AGUI gui = dtlTradersPlugin.getGuiListService().getGUI(guiName);
-            TradeGUI tradeGUI = (TradeGUI) gui;
-            for (TradeGUIPage page : tradeGUI.getPages()) {
-                if (page == null)
-                    continue;
-
-                for (AGUIItem tempItem : page.getItems("buy")) {
-                    if (!(tempItem instanceof TradableGUIItem))
+            for (TradeGUIPage page : ((TradeGUI) gui).getPages()) {
+                for (AGUIItem guiItem : page.getItems(shopMode)) {
+                    if (!(guiItem instanceof TradableGUIItem tradableItem))
+                        continue;
+                    if (!guiItem.getMainItem().isSimilar(item) || guiItem.getMainItem().getAmount() > 1)
                         continue;
 
-                    TradableGUIItem tradeItem = (TradableGUIItem) tempItem;
-                    if (tradeItem.getMainItem().isSimilar(compareItem)) {
-                        if (tempItem.getMainItem().getAmount() > 1)
-                            continue;
-
-                        result = tradeItem;
-                        break;
+                    result.add(tradableItem);
+                    if (Config.debug) {
+                        CargoMain.getInstance().getLogger().info("Found for $" + tradableItem.getTradePrice() + " in " + merchant.getId() + "/" + page.getPageName());
                     }
                 }
-                if (result != null)
-                    break;
             }
-            if (result != null)
-                break;
         }
         return result;
     }
