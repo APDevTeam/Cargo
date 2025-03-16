@@ -2,6 +2,7 @@ package io.github.cccm5.async;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import io.github.cccm5.CargoMain;
+import io.github.cccm5.config.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,23 +20,20 @@ import org.bukkit.scoreboard.Scoreboard;
 public class ProcessingTask extends BukkitRunnable implements Listener
 {
     private static final int DELAY_BETWEEN_DISPLAY = 1;
-    private int remainingTime,remainingChests;
+    private int remainingTime;
+    private final int remainingChests;
     private final Player player;
-    private final TradableGUIItem item;
-    private final String itemDisplayName;
-    private Scoreboard board;
-    private Objective objective;
+    private final Objective objective;
     public ProcessingTask(Player player, TradableGUIItem item, int remainingChests){//, int remainingChests){
         if (item == null) 
             throw new IllegalArgumentException("item must not be null");
         if (player == null) 
             throw new IllegalArgumentException("player must not be null");
         this.player = player;
-        this.item = item;
-        this.remainingTime = CargoMain.getDelay()/20;
+        this.remainingTime = Config.delay/20;
         this.remainingChests = remainingChests;
-        board = Bukkit.getScoreboardManager().getNewScoreboard();
-        itemDisplayName = item.getMainItem().getItemMeta().getDisplayName() != null && item.getMainItem().getItemMeta().getDisplayName().length() > 0  ? item.getMainItem().getItemMeta().getDisplayName() : item.getMainItem().getType().name().toLowerCase();
+        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        String itemDisplayName = item.getMainItem().getItemMeta().getDisplayName() != null && item.getMainItem().getItemMeta().getDisplayName().length() > 0 ? item.getMainItem().getItemMeta().getDisplayName() : item.getMainItem().getType().name().toLowerCase();
         objective = itemDisplayName.length() <=14 ? board.registerNewObjective(ChatColor.DARK_AQUA + itemDisplayName, "dummy") : board.registerNewObjective(ChatColor.DARK_AQUA + "Cargo", "dummy","Cargo");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(board);

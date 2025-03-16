@@ -2,6 +2,7 @@ package io.github.cccm5.async;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import io.github.cccm5.CargoMain;
+import io.github.cccm5.config.Config;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -16,48 +17,44 @@ public abstract class CargoTask extends BukkitRunnable {
     protected final Player originalPilot;
     protected TradableGUIItem item;
 
-    // protected Stock stock;
-    // protected final StockItem item;
     protected CargoTask(PlayerCraft craft, TradableGUIItem guiItem) {
         if (craft == null) {
             throw new IllegalArgumentException("craft must not be null");
-        } else if (!(craft instanceof PlayerCraft)) {
-            throw new IllegalArgumentException("craft must not be a player craft");
-        } else
-            this.craft = (PlayerCraft) craft;
+        }
+        this.craft = craft;
         if (guiItem == null)
             throw new IllegalArgumentException("item must not be null");
         else
-            this.item = guiItem;
-        this.originalLocations = craft.getHitBox();
-        this.originalPilot = this.craft.getPilot();
+            item = guiItem;
+        originalLocations = craft.getHitBox();
+        originalPilot = craft.getPilot();
     }
 
     @Override
     public void run() {
         if (CraftManager.getInstance().getCraftByPlayer(originalPilot) == null) {
-            if (CargoMain.isDebug())
-                CargoMain.logger.info("canceling CargoTask due to missing player/craft");
+            if (Config.debug)
+                CargoMain.getInstance().getLogger().info("canceling CargoTask due to missing player/craft");
             CargoMain.getQue().remove(originalPilot);
-            this.cancel();
+            cancel();
             return;
         }
 
-        if (this.craft.getPilot() != originalPilot) {
+        if (craft.getPilot() != originalPilot) {
             originalPilot.sendMessage("Pilots changed!");
             CargoMain.getQue().remove(originalPilot);
-            this.cancel();
+            cancel();
             return;
         }
 
         if (craft.getHitBox() != originalLocations) {
             originalPilot.sendMessage("Blocks moved/changed!");
             CargoMain.getQue().remove(originalPilot);
-            this.cancel();
+            cancel();
             return;
         }
-        if (CargoMain.isDebug())
-            CargoMain.logger.info("Running execute method for CargoTask with address " + this + ". Pilot: "
+        if (Config.debug)
+            CargoMain.getInstance().getLogger().info("Running execute method for CargoTask with address " + this + ". Pilot: "
                     + originalPilot.getName() + " CraftSize: " + originalLocations.size() + " CraftType: "
                     + craft.getType().getStringProperty(CraftType.NAME) + " StockItem: "
                     + (item.getDisplayName().length() > 0 ? item.getDisplayName()

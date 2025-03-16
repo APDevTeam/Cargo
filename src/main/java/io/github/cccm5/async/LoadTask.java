@@ -2,6 +2,7 @@ package io.github.cccm5.async;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import io.github.cccm5.CargoMain;
+import io.github.cccm5.config.Config;
 import io.github.cccm5.util.CraftInventoryUtil;
 import net.countercraft.movecraft.craft.PlayerCraft;
 
@@ -29,7 +30,7 @@ public class LoadTask extends CargoTask {
                         ? item.getMainItem().getMaxStackSize()
                         : inv.getItem(i).getMaxStackSize() - inv.getItem(i).getAmount();
                 if (CargoMain.getEconomy().getBalance(originalPilot) > item.getTradePrice() * maxCount
-                        * (1 + CargoMain.getLoadTax())) {
+                        * (1 + Config.loadTax)) {
                     loaded += maxCount;
                     ItemStack tempItem = item.getMainItem().clone();
                     tempItem.setAmount(tempItem.getMaxStackSize());
@@ -37,18 +38,18 @@ public class LoadTask extends CargoTask {
 
                 } else {
                     maxCount = (int) (CargoMain.getEconomy().getBalance(originalPilot)
-                            / (item.getTradePrice() * (1 + CargoMain.getLoadTax())));
+                            / (item.getTradePrice() * (1 + Config.loadTax)));
                     this.cancel();
                     CargoMain.getQue().remove(originalPilot);
-                    originalPilot.sendMessage(CargoMain.SUCCESS_TAG + "You ran out of money!");
+                    originalPilot.sendMessage(Config.SUCCESS_TAG + "You ran out of money!");
                     if (maxCount <= 0) {
-                        if (CargoMain.isDebug()) {
-                            CargoMain.logger.info("Balance: " + CargoMain.getEconomy().getBalance(originalPilot)
+                        if (Config.debug) {
+                            CargoMain.getInstance().getLogger().info("Balance: " + CargoMain.getEconomy().getBalance(originalPilot)
                                     + ". maxCount: " + maxCount + ".");
                         }
-                        originalPilot.sendMessage(CargoMain.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
+                        originalPilot.sendMessage(Config.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
                                 + String.format("%.2f", loaded * item.getTradePrice()) + " took a tax of "
-                                + String.format("%.2f", CargoMain.getLoadTax() * loaded * item.getTradePrice()));
+                                + String.format("%.2f", Config.loadTax * loaded * item.getTradePrice()));
                         return;
                     }
                     ItemStack tempItem = item.getMainItem().clone();
@@ -58,29 +59,29 @@ public class LoadTask extends CargoTask {
                         tempItem.setAmount(inv.getItem(i).getAmount() + maxCount);
                     inv.setItem(i, tempItem);
                     loaded += maxCount;
-                    if (CargoMain.isDebug()) {
-                        CargoMain.logger.info("Balance: " + CargoMain.getEconomy().getBalance(originalPilot)
+                    if (Config.debug) {
+                        CargoMain.getInstance().getLogger().info("Balance: " + CargoMain.getEconomy().getBalance(originalPilot)
                                 + ". maxCount: " + maxCount + ". Actual stack-size: " + tempItem.getAmount());
                     }
-                    originalPilot.sendMessage(CargoMain.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
+                    originalPilot.sendMessage(Config.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
                             + String.format("%.2f", loaded * item.getTradePrice()) + " took a tax of "
-                            + String.format("%.2f", CargoMain.getLoadTax() * loaded * item.getTradePrice()));
+                            + String.format("%.2f", Config.loadTax * loaded * item.getTradePrice()));
                     CargoMain.getEconomy().withdrawPlayer(originalPilot,
-                            loaded * item.getTradePrice() * (1 + CargoMain.getLoadTax()));
+                            loaded * item.getTradePrice() * (1 + Config.loadTax));
                     return;
                 }
                 CargoMain.getEconomy().withdrawPlayer(originalPilot,
-                        maxCount * item.getTradePrice() * (1 + CargoMain.getLoadTax()));
+                        maxCount * item.getTradePrice() * (1 + Config.loadTax));
             }
 
-        originalPilot.sendMessage(CargoMain.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
+        originalPilot.sendMessage(Config.SUCCESS_TAG + "Loaded " + loaded + " items worth $"
                 + String.format("%.2f", loaded * item.getTradePrice()) + " took a tax of "
-                + String.format("%.2f", CargoMain.getLoadTax() * loaded * item.getTradePrice()));
+                + String.format("%.2f", Config.loadTax * loaded * item.getTradePrice()));
 
         if (invs.size() <= 1) {
             this.cancel();
             CargoMain.getQue().remove(originalPilot);
-            originalPilot.sendMessage(CargoMain.SUCCESS_TAG + "All cargo loaded");
+            originalPilot.sendMessage(Config.SUCCESS_TAG + "All cargo loaded");
             return;
         }
         new ProcessingTask(originalPilot, item, invs.size()).runTaskTimer(CargoMain.getInstance(), 0, 20);
