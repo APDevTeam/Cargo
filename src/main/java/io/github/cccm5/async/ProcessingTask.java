@@ -1,6 +1,7 @@
-package io.github.cccm5;
+package io.github.cccm5.async;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
+import io.github.cccm5.CargoMain;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

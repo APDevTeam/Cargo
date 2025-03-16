@@ -1,6 +1,7 @@
-package io.github.cccm5;
+package io.github.cccm5.async;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
+import io.github.cccm5.CargoMain;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
