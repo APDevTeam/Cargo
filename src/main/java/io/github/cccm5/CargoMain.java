@@ -7,6 +7,7 @@ import com.degitise.minevid.dtlTraders.guis.gui.TradeGUIPage;
 import com.degitise.minevid.dtlTraders.guis.items.AGUIItem;
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
 import com.degitise.minevid.dtlTraders.utils.citizens.TraderTrait;
+import io.github.cccm5.util.CraftInventoryUtil;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.countercraft.movecraft.craft.Craft;
@@ -277,7 +278,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         assert finalItem!=null;
         String itemName = finalItem.getMainItem().getItemMeta().getDisplayName() != null && finalItem.getMainItem().getItemMeta().getDisplayName().length() > 0 ? finalItem.getMainItem().getItemMeta().getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
 
-        List<Inventory> invs = Utils.getInventories(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
+        List<Inventory> invs = CraftInventoryUtil.getInventories(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
         int size = invs.size();
         if(size <=0 ){
             player.sendMessage(CargoMain.ERROR_TAG + "You have no " + itemName + " on this craft!");
@@ -369,7 +370,7 @@ public class CargoMain extends JavaPlugin implements Listener {
             return;
         }
 
-        List<Inventory> invs = Utils.getInventoriesWithSpace(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
+        List<Inventory> invs = CraftInventoryUtil.getInventoriesWithSpace(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
         int size = invs.size();
         if(size <=0 ){
             player.sendMessage(CargoMain.ERROR_TAG + "You don't have any space for " + itemName + " on this craft!");

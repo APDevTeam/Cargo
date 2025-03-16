@@ -1,6 +1,7 @@
 package io.github.cccm5;
 
 import com.degitise.minevid.dtlTraders.guis.items.TradableGUIItem;
+import io.github.cccm5.util.CraftInventoryUtil;
 import net.countercraft.movecraft.craft.PlayerCraft;
 
 import org.bukkit.Material;
@@ -15,7 +16,7 @@ public class LoadTask extends CargoTask {
     }
 
     protected void execute() {
-        List<Inventory> invs = Utils.getInventoriesWithSpace(craft, item.getMainItem(), Material.CHEST,
+        List<Inventory> invs = CraftInventoryUtil.getInventoriesWithSpace(craft, item.getMainItem(), Material.CHEST,
                 Material.TRAPPED_CHEST, Material.BARREL);
 
         Inventory inv = invs.get(0);
