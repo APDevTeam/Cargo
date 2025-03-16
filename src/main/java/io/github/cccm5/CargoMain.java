@@ -187,7 +187,7 @@ public class CargoMain extends JavaPlugin implements Listener {
         String itemName = finalItem.getMainItem().getItemMeta().getDisplayName() != null && finalItem.getMainItem().getItemMeta().getDisplayName().length() > 0 ? finalItem.getMainItem().getItemMeta().getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
         List<Inventory> inventories = CraftInventoryUtil.getInventories(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
         if (inventories.isEmpty()) {
-            player.sendMessage(Config.ERROR_TAG + "You have no " + itemName + " on this craft!");
+            player.sendMessage(Config.ERROR_TAG + "You have no " + itemName + ChatColor.RESET + " on this craft!");
             return;
         }
 
@@ -242,14 +242,14 @@ public class CargoMain extends JavaPlugin implements Listener {
 
         String itemName = finalItem.getMainItem().getItemMeta().getDisplayName() != null && finalItem.getMainItem().getItemMeta().getDisplayName().length() > 0 ? finalItem.getMainItem().getItemMeta().getDisplayName() : finalItem.getMainItem().getType().name().toLowerCase();
         if(!economy.has(player,finalItem.getTradePrice()*(1+Config.loadTax))){
-            player.sendMessage(Config.ERROR_TAG + "You don't have enough money to buy any " + itemName + "!");
+            player.sendMessage(Config.ERROR_TAG + "You don't have enough money to buy any " + itemName + ChatColor.RESET + "!");
             return;
         }
 
         List<Inventory> invs = CraftInventoryUtil.getInventoriesWithSpace(playerCraft, finalItem.getMainItem(), Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
         int size = invs.size();
         if(size <=0 ){
-            player.sendMessage(Config.ERROR_TAG + "You don't have any space for " + itemName + " on this craft!");
+            player.sendMessage(Config.ERROR_TAG + "You don't have any space for " + itemName + ChatColor.RESET + " on this craft!");
             return;
         }
 
