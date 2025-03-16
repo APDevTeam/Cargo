@@ -14,6 +14,8 @@ import io.github.cccm5.commands.CargoCommand;
 import io.github.cccm5.commands.LoadCommand;
 import io.github.cccm5.commands.UnloadCommand;
 import io.github.cccm5.config.Config;
+import io.github.cccm5.listener.SignClickListener;
+import io.github.cccm5.listener.SignPlaceListener;
 import io.github.cccm5.util.CraftInventoryUtil;
 import io.github.cccm5.util.NPCUtil;
 import net.citizensnpcs.api.CitizensAPI;
@@ -71,7 +73,6 @@ public class CargoMain extends JavaPlugin implements Listener {
     }
 
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(this, this);
         playersInQue = new ArrayList<>();
         instance = this;
 
@@ -114,6 +115,9 @@ public class CargoMain extends JavaPlugin implements Listener {
         dtlTradersPlugin = (Main) traders;
         economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
 
+        getServer().getPluginManager().registerEvents(new SignClickListener(), this);
+        getServer().getPluginManager().registerEvents(new SignPlaceListener(), this);
+
         getCommand("cargo").setExecutor(new CargoCommand());
         getCommand("load").setExecutor(new LoadCommand());
         getCommand("unload").setExecutor(new UnloadCommand());
@@ -122,36 +126,6 @@ public class CargoMain extends JavaPlugin implements Listener {
     public void onDisable() {
         economy = null;
         instance = null;
-    }
-
-    @EventHandler
-    public void onSignClick(PlayerInteractEvent e) {
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-        if (!e.getClickedBlock().getType().name().equals("SIGN_POST") && !e.getClickedBlock().getType().name().endsWith("SIGN") && !e.getClickedBlock().getType().name().endsWith("WALL_SIGN")) {
-            return;
-        }
-        Sign sign = (Sign) e.getClickedBlock().getState();
-        if (sign.getLine(0).equals(ChatColor.DARK_AQUA + "[UnLoad]")) {
-            unload(e.getPlayer());
-            return;
-        }
-        if (sign.getLine(0).equals(ChatColor.DARK_AQUA + "[Load]")) {
-            load(e.getPlayer());
-        }
-
-    }
-
-    @EventHandler
-    public void onSignPlace(SignChangeEvent e){
-        if(!e.getBlock().getType().name().equals("SIGN_POST") && !e.getBlock().getType().name().endsWith("SIGN") && !e.getBlock().getType().name().endsWith("WALL_SIGN")){
-            return;
-        }
-        if(ChatColor.stripColor(e.getLine(0)).equalsIgnoreCase("[Load]") || ChatColor.stripColor(e.getLine(0)).equalsIgnoreCase("[UnLoad]")){
-            e.setLine(0,ChatColor.DARK_AQUA + (ChatColor.stripColor(e.getLine(0))).replaceAll("u","U").replaceAll("l","L"));
-        }
-
     }
 
     public static Economy getEconomy(){
